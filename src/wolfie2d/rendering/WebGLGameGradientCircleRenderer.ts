@@ -11,7 +11,7 @@ import { GradientCircleSpriteType } from '../scene/sprite/GradientCircleSpriteTy
 
 var SpriteDefaults = {
     A_POSITION: "a_Position",
-    A_TEX_COORD: "a_TexCoord",
+    A_VALUETOINTERPOLATE: "a_ValueToInterpolate",
     U_SPRITE_TRANSFORM: "u_SpriteTransform",
     U_SAMPLER: "u_Sampler",
     NUM_VERTICES: 4,
@@ -42,21 +42,31 @@ export class WebGLGameGradientCircleRenderer {
     public init(webGL : WebGLRenderingContext) : void {
         this.shader = new WebGLGameShader();
         var vertexShaderSource =
-            'uniform mat4 ' + SpriteDefaults.U_SPRITE_TRANSFORM + ';\n' +
+            'precision mediump float;\n' +
             'attribute vec4 ' + SpriteDefaults.A_POSITION + ';\n' +
-            'attribute vec2 ' + SpriteDefaults.A_TEX_COORD + ';\n' +
-            'varying vec2 v_TexCoord;\n' +
+            'attribute vec2 ' + SpriteDefaults.A_VALUETOINTERPOLATE + ';\n' +
+            'varying vec2 val;\n' +
+            'uniform mat4 '+ SpriteDefaults.U_SPRITE_TRANSFORM+';\n' +
             'void main() {\n' +
+            '  val = a_ValueToInterpolate;\n' +
             '  gl_Position = ' + SpriteDefaults.U_SPRITE_TRANSFORM + ' * ' + SpriteDefaults.A_POSITION + ';\n' +
             '}\n';
         var fragmentShaderSource =
             '#ifdef GL_ES\n' +
             'precision mediump float;\n' +
             '#endif\n' +
-            'uniform sampler2D ' + SpriteDefaults.U_SAMPLER + ';\n' +
-            'varying vec2 v_TexCoord;\n' +
+            'varying vec2 val;\n' +
             'void main() {\n' +
-            '  gl_FragColor = texture2D(' + SpriteDefaults.U_SAMPLER + ', v_TexCoord);\n' +
+            '  float R = 1.0;\n' +
+            '  float dist = sqrt(dot(val, val));\n' +
+            '  float alpha = 1.0;\n' +
+            '  if(dist > R){\n' +
+            '      discard;\n' +
+            '  }\n' +
+            '  float Red = 1.0;\n' +
+            '  float Green = 1.0;\n' +
+            '  float Blue = 1.0;\n' +
+            '  gl_FragColor = vec4() * dist;\n' +
             '}\n';
 
         this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
@@ -81,7 +91,7 @@ export class WebGLGameGradientCircleRenderer {
         // SETUP THE SHADER ATTRIBUTES AND UNIFORMS
         this.webGLAttributeLocations = {};
         this.webGLUniformLocations = {};
-        this.loadAttributeLocations(webGL, [SpriteDefaults.A_POSITION, SpriteDefaults.A_TEX_COORD]);
+        this.loadAttributeLocations(webGL, [SpriteDefaults.A_POSITION, SpriteDefaults.A_VALUETOINTERPOLATE]);
         this.loadUniformLocations(webGL, [SpriteDefaults.U_SPRITE_TRANSFORM, SpriteDefaults.U_SAMPLER]);
 
         // WE'LL USE THESE FOR TRANSOFMRING OBJECTS WHEN WE DRAW THEM
@@ -157,9 +167,9 @@ export class WebGLGameGradientCircleRenderer {
         let a_PositionLocation : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_POSITION];
         webGL.vertexAttribPointer(a_PositionLocation, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.VERTEX_POSITION_OFFSET);
         webGL.enableVertexAttribArray(a_PositionLocation);
-        let a_TexCoordLocation : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_TEX_COORD];
-        webGL.vertexAttribPointer(a_TexCoordLocation, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.TEXTURE_COORDINATE_OFFSET);
-        webGL.enableVertexAttribArray(a_TexCoordLocation);
+        // let a_TexCoordLocation : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_TEX_COORD];
+        // webGL.vertexAttribPointer(a_TexCoordLocation, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.TEXTURE_COORDINATE_OFFSET);
+        // webGL.enableVertexAttribArray(a_TexCoordLocation);
 
         // USE THE UNIFORMS
         let u_SpriteTransformLocation : WebGLUniformLocation = this.webGLUniformLocations[SpriteDefaults.U_SPRITE_TRANSFORM];
