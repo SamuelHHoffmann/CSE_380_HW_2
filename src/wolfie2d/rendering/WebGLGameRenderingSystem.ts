@@ -3,13 +3,16 @@
  */
 import {TextRenderer} from './TextRenderer'
 import {WebGLGameSpriteRenderer} from './WebGLGameSpriteRenderer'
+import {WebGLGameGradientCircleRenderer} from './WebGLGameGradientCircleRenderer'
 import {AnimatedSprite} from '../scene/sprite/AnimatedSprite'
 import {WebGLGameTexture } from './WebGLGameTexture';
+import { GradientCircleSprite } from '../scene/sprite/GradientCircleSprite';
 
 export class WebGLGameRenderingSystem {
     private renderingCanvas : HTMLCanvasElement;
     private webGL : WebGLRenderingContext;
     private spriteRenderer : WebGLGameSpriteRenderer;
+    private circleRenderer : WebGLGameGradientCircleRenderer;
     private textRenderer : TextRenderer;
     private canvasWidth : number;
     private canvasHeight : number;
@@ -33,6 +36,11 @@ export class WebGLGameRenderingSystem {
     public getSpriteRenderer() : WebGLGameSpriteRenderer {
         return this.spriteRenderer;
     }
+
+    public getGradientCircleRenderer() : WebGLGameGradientCircleRenderer {
+        return this.circleRenderer;
+    }
+
 
     public getTextRenderer() : TextRenderer {
         return this.textRenderer;
@@ -77,9 +85,14 @@ export class WebGLGameRenderingSystem {
         // NOW MAKE THE SHADER FOR DRAWING THIS THING
         this.spriteRenderer = new WebGLGameSpriteRenderer();
         this.spriteRenderer.init(this.webGL);
-        
+
         // THIS WILL STORE OUR TEXT
         this.textRenderer = new TextRenderer(textCanvasId, "serif", 18, "#FFFF00");
+
+        // Gradient Circle Shader
+        this.circleRenderer = new WebGLGameGradientCircleRenderer();
+        this.circleRenderer.init(this.webGL);
+
     }
 
     public initWebGLTexture(textureToInit : WebGLGameTexture, textureId : number, image : HTMLImageElement, callback : Function) : void {
@@ -115,13 +128,16 @@ export class WebGLGameRenderingSystem {
         this.webGL.clearColor(r, g, b, a);
     }
 
-    public render(visibleSet : Array<AnimatedSprite>) : void {
+    public render(visibleSprites : Array<AnimatedSprite>, visibleCircles : Array<GradientCircleSprite>) : void { 
         // CLEAR THE CANVAS
         this.webGL.clear(this.webGL.COLOR_BUFFER_BIT | this.webGL.DEPTH_BUFFER_BIT);
         
         // RENDER THE SPRITES ON ONE CANVAS
-        this.spriteRenderer.renderAnimatedSprites(this.webGL, this.canvasWidth, this.canvasHeight, visibleSet);
+        this.spriteRenderer.renderAnimatedSprites(this.webGL, this.canvasWidth, this.canvasHeight, visibleSprites);
         
+        // Render Gradient Circles on canvas
+        this.circleRenderer.renderGradientCircleSprites(this.webGL, this.canvasWidth, this.canvasHeight, visibleCircles);
+
         // THEN THE TEXT ON ANOTHER OVERLAPPING CANVAS
         this.textRenderer.render();
     }
