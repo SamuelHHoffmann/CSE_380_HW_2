@@ -13,7 +13,7 @@ var SpriteDefaults = {
     A_POSITION: "a_Position",
     A_VALUETOINTERPOLATE: "a_ValueToInterpolate",
     U_SPRITE_TRANSFORM: "u_SpriteTransform",
-    U_SAMPLER: "u_Sampler",
+    U_COLOR: "u_Color",
     NUM_VERTICES: 4,
     FLOATS_PER_VERTEX: 2,
     FLOATS_PER_TEXTURE_COORDINATE: 2,
@@ -32,7 +32,7 @@ export class WebGLGameGradientCircleRenderer {
     private spriteTranslate : Vector3;
     private spriteRotate : Vector3;
     private spriteScale : Vector3;    
-    private spriteColor : Vector3;
+    private spriteColor : Vector3 = new Vector3();
 
     private webGLAttributeLocations : HashTable<GLuint>;
     private webGLUniformLocations : HashTable<WebGLUniformLocation>;
@@ -56,6 +56,7 @@ export class WebGLGameGradientCircleRenderer {
             'precision mediump float;\n' +
             '#endif\n' +
             'varying vec2 val;\n' +
+            'uniform vec4 ' + SpriteDefaults.U_COLOR + ';\n' +
             'void main() {\n' +
             '  float R = 1.0;\n' +
             '  float dist = sqrt(dot(val, val));\n' +
@@ -63,10 +64,8 @@ export class WebGLGameGradientCircleRenderer {
             '  if(dist > R){\n' +
             '      discard;\n' +
             '  }\n' +
-            '  float Red = 1.0;\n' +
-            '  float Green = 1.0;\n' +
-            '  float Blue = 1.0;\n' +
-            '  gl_FragColor = vec4() * dist;\n' +
+            //'  gl_FragColor = vec4('+SpriteDefaults.U_COLOR+'.x * dist, '+SpriteDefaults.U_COLOR+'.y * dist, '+SpriteDefaults.U_COLOR+'.z * dist, 1.0);\n' +
+            '  gl_FragColor = vec4(dist, 0, dist, 1.0);\n' +
             '}\n';
 
         this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
@@ -92,7 +91,7 @@ export class WebGLGameGradientCircleRenderer {
         this.webGLAttributeLocations = {};
         this.webGLUniformLocations = {};
         this.loadAttributeLocations(webGL, [SpriteDefaults.A_POSITION, SpriteDefaults.A_VALUETOINTERPOLATE]);
-        this.loadUniformLocations(webGL, [SpriteDefaults.U_SPRITE_TRANSFORM, SpriteDefaults.U_SAMPLER]);
+        this.loadUniformLocations(webGL, [SpriteDefaults.U_SPRITE_TRANSFORM, SpriteDefaults.U_COLOR]);
 
         // WE'LL USE THESE FOR TRANSOFMRING OBJECTS WHEN WE DRAW THEM
         this.spriteTransform = new Matrix(4, 4);
@@ -167,13 +166,17 @@ export class WebGLGameGradientCircleRenderer {
         let a_PositionLocation : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_POSITION];
         webGL.vertexAttribPointer(a_PositionLocation, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.VERTEX_POSITION_OFFSET);
         webGL.enableVertexAttribArray(a_PositionLocation);
-        // let a_TexCoordLocation : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_TEX_COORD];
-        // webGL.vertexAttribPointer(a_TexCoordLocation, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.TEXTURE_COORDINATE_OFFSET);
-        // webGL.enableVertexAttribArray(a_TexCoordLocation);
+        let a_ValueToInterpolate : GLuint = this.webGLAttributeLocations[SpriteDefaults.A_VALUETOINTERPOLATE];
+        webGL.vertexAttribPointer(a_ValueToInterpolate, SpriteDefaults.FLOATS_PER_TEXTURE_COORDINATE, webGL.FLOAT, false, SpriteDefaults.TOTAL_BYTES, SpriteDefaults.VERTEX_POSITION_OFFSET);
+        webGL.enableVertexAttribArray(a_ValueToInterpolate);
 
         // USE THE UNIFORMS
         let u_SpriteTransformLocation : WebGLUniformLocation = this.webGLUniformLocations[SpriteDefaults.U_SPRITE_TRANSFORM];
         webGL.uniformMatrix4fv(u_SpriteTransformLocation, false, this.spriteTransform.getData());
+
+        let u_Color : WebGLUniformLocation = this.webGLAttributeLocations[SpriteDefaults.U_COLOR];
+        webGL.uniform4fv(u_Color, [this.spriteColor.getX(), this.spriteColor.getY(), this.spriteColor.getZ(), this.spriteColor.getW()]);
+
 
         // DRAW THE SPRITE AS A TRIANGLE STRIP USING 4 VERTICES, STARTING AT THE START OF THE ARRAY (index 0)
         webGL.drawArrays(webGL.TRIANGLE_STRIP, SpriteDefaults.INDEX_OF_FIRST_VERTEX, SpriteDefaults.NUM_VERTICES);

@@ -11,6 +11,8 @@ import {WebGLGameRenderingSystem} from '../wolfie2d/rendering/WebGLGameRendering
 import {SceneGraph} from '../wolfie2d/scene/SceneGraph'
 import {AnimatedSprite} from '../wolfie2d/scene/sprite/AnimatedSprite'
 import {AnimatedSpriteType} from '../wolfie2d/scene/sprite/AnimatedSpriteType'
+import { GradientCircleSpriteType } from '../wolfie2d/scene/sprite/GradientCircleSpriteType'
+import { GradientCircleSprite } from '../wolfie2d/scene/sprite/GradientCircleSprite'
 
 // IN THIS EXAMPLE WE'LL HAVE 2 SPRITE TYPES THAT EACH HAVE THE SAME 2 STATES
 // AND WHERE EACH SPRITE TYPE HAS ITS OWN SPRITE SHEET
@@ -75,6 +77,16 @@ class AnimatedSpriteDemo {
                 spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
                 scene.addAnimatedSprite(spriteToAdd);
             }
+        }
+
+        //TODO: make 5 Gradient Circles
+        for (let j = 0; j < 5; j++) {
+            let gradientSpriteType : GradientCircleSpriteType = new GradientCircleSpriteType(200, 200);
+            let spriteToAdd : GradientCircleSprite = new GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
+            let randomX : number = Math.floor(Math.random() * canvasWidth) - (gradientSpriteType.getSpriteWidth()/2);
+            let randomY : number = Math.floor(Math.random() * canvasHeight) - (gradientSpriteType.getSpriteHeight()/2);
+            spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+            scene.addCircleSprite(spriteToAdd);
         }
     }
 

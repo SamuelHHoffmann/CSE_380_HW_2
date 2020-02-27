@@ -35,6 +35,26 @@ export class SceneGraph {
         this.circleSprites.push(sprite);
     }
 
+    public removedAnimatedSprite(sprite : AnimatedSprite) : void {
+        let tempAnimatedSprites : Array<AnimatedSprite> = new Array();
+        this.animatedSprites.forEach(element => {
+            if (element != sprite){
+                tempAnimatedSprites.push(element);
+            }
+        });
+        this.animatedSprites = tempAnimatedSprites;
+    }
+
+    public removeCircleSprite(circle : GradientCircleSprite) : void {
+        let tempGradientCircles : Array<GradientCircleSprite> = new Array();
+        this.circleSprites.forEach(element => {
+            if (element != circle){
+                tempGradientCircles.push(element);
+            }
+        });
+        this.circleSprites = tempGradientCircles;
+    }
+
     public getSpriteAt(testX : number, testY : number) : AnimatedSprite {
         for (let sprite of this.animatedSprites) {
             if (sprite.contains(testX, testY))

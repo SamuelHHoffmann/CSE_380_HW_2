@@ -6,7 +6,7 @@ import { Vector3 } from '../../math/Vector3';
 export class GradientCircleSprite extends SceneObject {
     private spriteType : GradientCircleSpriteType;
     private state : string;
-    private spriteColor : Vector3; //RGBA all out of 255 (Red, Green, Blue, Alpha)
+    private spriteColor : Vector3 = new Vector3(); //RGBA all out of 1.0 (Red, Green, Blue, Alpha)
 
     public constructor(initSpriteType : GradientCircleSpriteType, initState : string) {
         super();
@@ -17,27 +17,27 @@ export class GradientCircleSprite extends SceneObject {
         switch (tempRandom) {
             case 1:
                 // Red 
-                this.spriteColor.set(255, 0, 0, 1); 
+                this.spriteColor.set(1, 0, 0, 1); 
                 break;
             case 2:
                 // Green
-                this.spriteColor.set(0, 255, 0, 1); 
+                this.spriteColor.set(0, 1, 0, 1); 
                 break;
             case 3:
                 // Blue
-                this.spriteColor.set(0, 0, 255, 1); 
+                this.spriteColor.set(0, 0, 1, 1); 
                 break;
             case 4:
                 // Yellow
-                this.spriteColor.set(255, 255, 0, 1); 
+                this.spriteColor.set(1, 1, 0, 1); 
                 break;
             case 5:
                 // Cyan
-                this.spriteColor.set(0, 255, 255, 1); 
+                this.spriteColor.set(0, 1, 1, 1); 
                 break;
             case 6:
                 // Magenta 
-                this.spriteColor.set(255, 0, 255, 1); 
+                this.spriteColor.set(1, 0, 1, 1); 
                 break;
         }
     }
