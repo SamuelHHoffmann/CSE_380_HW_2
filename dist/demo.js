@@ -177,7 +177,7 @@ var Game = function (_GameLoopTemplate_1$G) {
         key: "init",
         value: function init(gameCanvasId, textCanvasId) {
             this.renderingSystem.init(gameCanvasId, textCanvasId);
-            this.uiController.init(gameCanvasId, this.sceneGraph);
+            this.uiController.init(gameCanvasId, this.sceneGraph, this.resourceManager);
         }
     }, {
         key: "begin",
@@ -1551,8 +1551,6 @@ var SpriteDefaults = {
 var WebGLGameGradientCircleRenderer = function () {
     function WebGLGameGradientCircleRenderer() {
         _classCallCheck(this, WebGLGameGradientCircleRenderer);
-
-        this.spriteColor = new Vector3_1.Vector3();
     }
 
     _createClass(WebGLGameGradientCircleRenderer, [{
@@ -1560,8 +1558,8 @@ var WebGLGameGradientCircleRenderer = function () {
         value: function init(webGL) {
             this.shader = new WebGLGameShader_1.WebGLGameShader();
             var vertexShaderSource = 'precision mediump float;\n' + 'attribute vec4 ' + SpriteDefaults.A_POSITION + ';\n' + 'attribute vec2 ' + SpriteDefaults.A_VALUETOINTERPOLATE + ';\n' + 'varying vec2 val;\n' + 'uniform mat4 ' + SpriteDefaults.U_SPRITE_TRANSFORM + ';\n' + 'void main() {\n' + '  val = a_ValueToInterpolate;\n' + '  gl_Position = ' + SpriteDefaults.U_SPRITE_TRANSFORM + ' * ' + SpriteDefaults.A_POSITION + ';\n' + '}\n';
-            var fragmentShaderSource = '#ifdef GL_ES\n' + 'precision mediump float;\n' + '#endif\n' + 'varying vec2 val;\n' + 'uniform vec4 ' + SpriteDefaults.U_COLOR + ';\n' + 'void main() {\n' + '  float R = 1.0;\n' + '  float dist = sqrt(dot(val, val));\n' + '  float alpha = 1.0;\n' + '  if(dist > R){\n' + '      discard;\n' + '  }\n' +
-            //'  gl_FragColor = vec4('+SpriteDefaults.U_COLOR+'.x * dist, '+SpriteDefaults.U_COLOR+'.y * dist, '+SpriteDefaults.U_COLOR+'.z * dist, 1.0);\n' +
+            var fragmentShaderSource = '#ifdef GL_ES\n' + 'precision mediump float;\n' + '#endif\n' + 'uniform vec4 ' + SpriteDefaults.U_COLOR + ';\n' + 'varying vec2 val;\n' + 'void main() {\n' + '  float R = 0.5;\n' + '  float dist = sqrt(dot(val, val));\n' + '  float alpha = 1.0;\n' + '  if(dist > R){\n' + '      discard;\n' + '  }\n' +
+            // '  gl_FragColor = vec4('+SpriteDefaults.U_COLOR+'.x * dist, '+SpriteDefaults.U_COLOR+'.y * dist, '+SpriteDefaults.U_COLOR+'.z * dist, 1.0);\n' +
             '  gl_FragColor = vec4(dist, 0, dist, 1.0);\n' + '}\n';
             this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
             // GET THE webGL OBJECT TO USE
@@ -1582,6 +1580,7 @@ var WebGLGameGradientCircleRenderer = function () {
             this.spriteTranslate = new Vector3_1.Vector3();
             this.spriteRotate = new Vector3_1.Vector3();
             this.spriteScale = new Vector3_1.Vector3();
+            this.spriteColor = new Vector3_1.Vector3();
         }
     }, {
         key: "renderGradientCircleSprites",
@@ -2701,6 +2700,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+/*
+ * This provides responses to UI input.
+ */
+var AnimatedSprite_1 = require("../scene/sprite/AnimatedSprite");
+var GradientCircleSprite_1 = require("../scene/sprite/GradientCircleSprite");
+var GradientCircleSpriteType_1 = require("../scene/sprite/GradientCircleSpriteType");
 
 var UIController = function () {
     function UIController() {
@@ -2754,20 +2759,45 @@ var UIController = function () {
                 // START DRAGGING IT
                 _this.scene.removeCircleSprite(circle);
             }
+            event.stopImmediatePropagation();
         };
         this.click = function (event) {
-            _this.spriteToDrag = null;
-            _this.circleToDrag = null;
+            var canvasWidth = document.getElementById("game_canvas").width;
+            var canvasHeight = document.getElementById("game_canvas").height;
+            var DEMO_SPRITE_TYPES = ['resources/animated_sprites/RedCircleMan.json', 'resources/animated_sprites/MultiColorBlock.json'];
+            var DEMO_SPRITE_STATES = {
+                FORWARD_STATE: 'FORWARD',
+                REVERSE_STATE: 'REVERSE'
+            };
+            var randNum = Math.floor(Math.random() * 3);
+            if (randNum == 0 || randNum == 1) {
+                var spriteTypeToUse = DEMO_SPRITE_TYPES[randNum];
+                var animatedSpriteType = _this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
+                var spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                var randomX = Math.floor(Math.random() * canvasWidth) - animatedSpriteType.getSpriteWidth() / 2;
+                var randomY = Math.floor(Math.random() * canvasHeight) - animatedSpriteType.getSpriteHeight() / 2;
+                spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+                _this.scene.addAnimatedSprite(spriteToAdd);
+            } else {
+                var gradientSpriteType = new GradientCircleSpriteType_1.GradientCircleSpriteType(200, 200);
+                var _spriteToAdd = new GradientCircleSprite_1.GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
+                var _randomX = Math.floor(Math.random() * canvasWidth) - gradientSpriteType.getSpriteWidth() / 2;
+                var _randomY = Math.floor(Math.random() * canvasHeight) - gradientSpriteType.getSpriteHeight() / 2;
+                _spriteToAdd.getPosition().set(_randomX, _randomY, 0.0, 1.0);
+                _this.scene.addCircleSprite(_spriteToAdd);
+            }
+            event.stopImmediatePropagation();
         };
     }
 
     _createClass(UIController, [{
         key: "init",
-        value: function init(canvasId, initScene) {
+        value: function init(canvasId, initScene, reasourceManager) {
             this.spriteToDrag = null;
             this.circleToDrag = null;
             this.moved = false;
             this.once = false;
+            this.rM = reasourceManager;
             this.scene = initScene;
             this.dragOffsetX = -1;
             this.dragOffsetY = -1;
@@ -2785,6 +2815,6 @@ var UIController = function () {
 
 exports.UIController = UIController;
 
-},{}]},{},[1])
+},{"../scene/sprite/AnimatedSprite":16,"../scene/sprite/GradientCircleSprite":18,"../scene/sprite/GradientCircleSpriteType":19}]},{},[1])
 
 //# sourceMappingURL=demo.js.map
