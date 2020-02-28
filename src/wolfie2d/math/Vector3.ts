@@ -101,4 +101,9 @@ export class Vector3 {
         text += "]";
         console.log(text);
     }
+
+    public getData() : Float32List {
+        return this.vec;
+    }
+
 }

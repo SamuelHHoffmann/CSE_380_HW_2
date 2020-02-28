@@ -32,7 +32,6 @@ export class WebGLGameGradientCircleRenderer {
     private spriteTranslate : Vector3;
     private spriteRotate : Vector3;
     private spriteScale : Vector3;    
-    private spriteColor : Vector3;
 
     private webGLAttributeLocations : HashTable<GLuint>;
     private webGLUniformLocations : HashTable<WebGLUniformLocation>;
@@ -42,7 +41,6 @@ export class WebGLGameGradientCircleRenderer {
     public init(webGL : WebGLRenderingContext) : void {
         this.shader = new WebGLGameShader();
         var vertexShaderSource =
-            'precision mediump float;\n' +
             'attribute vec4 ' + SpriteDefaults.A_POSITION + ';\n' +
             'attribute vec2 ' + SpriteDefaults.A_VALUETOINTERPOLATE + ';\n' +
             'varying vec2 val;\n' +
@@ -55,8 +53,8 @@ export class WebGLGameGradientCircleRenderer {
             '#ifdef GL_ES\n' +
             'precision mediump float;\n' +
             '#endif\n' +
-            'uniform vec4 ' + SpriteDefaults.U_COLOR + ';\n' +
             'varying vec2 val;\n' +
+            'uniform vec4 u_Color;\n' +
             'void main() {\n' +
             '  float R = 0.5;\n' +
             '  float dist = sqrt(dot(val, val));\n' +
@@ -64,8 +62,7 @@ export class WebGLGameGradientCircleRenderer {
             '  if(dist > R){\n' +
             '      discard;\n' +
             '  }\n' +
-            // '  gl_FragColor = vec4('+SpriteDefaults.U_COLOR+'.x * dist, '+SpriteDefaults.U_COLOR+'.y * dist, '+SpriteDefaults.U_COLOR+'.z * dist, 1.0);\n' +
-            '  gl_FragColor = vec4(dist, 0, dist, 1.0);\n' +
+            '  gl_FragColor = vec4(u_Color.x * dist, u_Color.y * dist, u_Color.z * dist, 1.0);\n' +
             '}\n';
 
         this.shader.init(webGL, vertexShaderSource, fragmentShaderSource);
@@ -99,7 +96,6 @@ export class WebGLGameGradientCircleRenderer {
         this.spriteRotate = new Vector3();
         this.spriteScale = new Vector3();
 
-        this.spriteColor = new Vector3();
     }
 
     public renderGradientCircleSprites(  webGL : WebGLRenderingContext, 
@@ -177,9 +173,9 @@ export class WebGLGameGradientCircleRenderer {
         let u_SpriteTransformLocation : WebGLUniformLocation = this.webGLUniformLocations[SpriteDefaults.U_SPRITE_TRANSFORM];
         webGL.uniformMatrix4fv(u_SpriteTransformLocation, false, this.spriteTransform.getData());
 
-        let u_Color : WebGLUniformLocation = this.webGLAttributeLocations[SpriteDefaults.U_COLOR];
-        webGL.uniform4fv(u_Color, [this.spriteColor.getX(), this.spriteColor.getY(), this.spriteColor.getZ(), this.spriteColor.getW()]);
-        
+        let u_ColorLocation : WebGLUniformLocation = this.webGLUniformLocations[SpriteDefaults.U_COLOR];
+        webGL.uniform4f(u_ColorLocation, spriteColor.getX(), spriteColor.getY(), spriteColor.getZ() ,1);
+
 
         // DRAW THE SPRITE AS A TRIANGLE STRIP USING 4 VERTICES, STARTING AT THE START OF THE ARRAY (index 0)
         webGL.drawArrays(webGL.TRIANGLE_STRIP, SpriteDefaults.INDEX_OF_FIRST_VERTEX, SpriteDefaults.NUM_VERTICES);

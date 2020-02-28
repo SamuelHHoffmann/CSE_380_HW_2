@@ -40,6 +40,7 @@ export class GradientCircleSprite extends SceneObject {
                 this.spriteColor.set(1, 0, 1, 1); 
                 break;
         }
+        this.setState("R:"+this.spriteColor.getX()+", G:"+this.spriteColor.getY()+", B:"+this.spriteColor.getZ()+", A:"+this.spriteColor.getW());
     }
 
     public getSpriteType() : GradientCircleSpriteType {
@@ -55,6 +56,7 @@ export class GradientCircleSprite extends SceneObject {
     }
 
     public getSpriteColor() : Vector3 {
+
         return this.spriteColor
     }
 
