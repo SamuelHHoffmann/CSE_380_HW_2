@@ -15,8 +15,7 @@ export class UIController {
     private scene : SceneGraph;
     private dragOffsetX : number;
     private dragOffsetY : number;
-    private moved : boolean;
-    private once : boolean;
+    private lastClick : number;
     private rM : ResourceManager;
     private details : string;
 
@@ -25,9 +24,8 @@ export class UIController {
     public init(canvasId : string, initScene : SceneGraph, reasourceManager : ResourceManager) : void {
         this.spriteToDrag = null;
         this.circleToDrag = null;
-        this.moved = false;
-        this.once = false;
         this.details = "";
+        this.lastClick = 0;
 
         this.rM = reasourceManager;
 
@@ -45,6 +43,8 @@ export class UIController {
     }
 
     public mouseDownHandler = (event : MouseEvent) : void => {
+        this.lastClick = event.timeStamp;   
+
         let mousePressX : number = event.clientX;
         let mousePressY : number = event.clientY;
         let sprite : AnimatedSprite = this.scene.getSpriteAt(mousePressX, mousePressY);
@@ -66,6 +66,7 @@ export class UIController {
     }
     
     public mouseMoveHandler = (event : MouseEvent) : void => {
+        this.lastClick -= 500;
         if (this.spriteToDrag != null) {
             this.spriteToDrag.getPosition().set(event.clientX + this.dragOffsetX, 
                                                 event.clientY + this.dragOffsetY, 
@@ -88,7 +89,7 @@ export class UIController {
             if (sprite == null && circle == null){
                 this.scene.setSceneDescription("");
             }else{
-                this.details = "HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + ((sprite != null) ? sprite : circle);
+                this.details = ", HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + ((sprite != null) ? sprite : circle);
                 this.scene.setSceneDescription(this.details);
             }
         }
@@ -101,6 +102,12 @@ export class UIController {
     public mouseUpHandler = (event : MouseEvent) : void => {
         this.spriteToDrag = null;
         this.circleToDrag = null;
+
+        let time = event.timeStamp;
+        if (time-this.lastClick < 500){
+            this.click()
+        }
+
     }
 
     public doubleClick = (event : MouseEvent) : void => {
@@ -121,40 +128,40 @@ export class UIController {
         event.stopImmediatePropagation();
     }
 
-    public click = (event : MouseEvent) : void => {
-        // let canvasWidth : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).width;
-        // let canvasHeight : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).height;
-
-        // const DEMO_SPRITE_TYPES : string[] = [
-        //     'resources/animated_sprites/RedCircleMan.json',
-        //     'resources/animated_sprites/MultiColorBlock.json'
-        // ];
-
-        // const DEMO_SPRITE_STATES = {
-        //     FORWARD_STATE: 'FORWARD',
-        //     REVERSE_STATE: 'REVERSE'
-        // };
-
-        // let randNum = Math.floor(Math.random()*3)
-
-        // if (randNum == 0 || randNum == 1){
-        //     let spriteTypeToUse : string = DEMO_SPRITE_TYPES[randNum]
-        //     let animatedSpriteType : AnimatedSpriteType = this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
-        //     let spriteToAdd : AnimatedSprite = new AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
-        //     let randomX : number = Math.floor(Math.random() * canvasWidth) - (animatedSpriteType.getSpriteWidth()/2);
-        //     let randomY : number = Math.floor(Math.random() * canvasHeight) - (animatedSpriteType.getSpriteHeight()/2);
-        //     spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
-        //     this.scene.addAnimatedSprite(spriteToAdd);
-        // }else{
-        //     let gradientSpriteType : GradientCircleSpriteType = new GradientCircleSpriteType(200, 200);
-        //     let spriteToAdd : GradientCircleSprite = new GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
-        //     let randomX : number = Math.floor(Math.random() * canvasWidth) - (gradientSpriteType.getSpriteWidth()/2);
-        //     let randomY : number = Math.floor(Math.random() * canvasHeight) - (gradientSpriteType.getSpriteHeight()/2);
-        //     spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
-        //     this.scene.addCircleSprite(spriteToAdd);
-        // }
+    private click(){
         
-        // event.stopImmediatePropagation();
+        let canvasWidth : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).width;
+        let canvasHeight : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).height;
+
+        const DEMO_SPRITE_TYPES : string[] = [
+            'resources/animated_sprites/RedCircleMan.json',
+            'resources/animated_sprites/MultiColorBlock.json'
+        ];
+
+        const DEMO_SPRITE_STATES = {
+            FORWARD_STATE: 'FORWARD',
+            REVERSE_STATE: 'REVERSE'
+        };
+
+        let randNum = Math.floor(Math.random()*3)
+
+        if (randNum == 0 || randNum == 1){
+            let spriteTypeToUse : string = DEMO_SPRITE_TYPES[randNum]
+            let animatedSpriteType : AnimatedSpriteType = this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
+            let spriteToAdd : AnimatedSprite = new AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+            let randomX : number = Math.floor(Math.random() * canvasWidth) - (animatedSpriteType.getSpriteWidth()/2);
+            let randomY : number = Math.floor(Math.random() * canvasHeight) - (animatedSpriteType.getSpriteHeight()/2);
+            spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+            this.scene.addAnimatedSprite(spriteToAdd);
+        }else{
+            let gradientSpriteType : GradientCircleSpriteType = new GradientCircleSpriteType(200, 200);
+            let spriteToAdd : GradientCircleSprite = new GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
+            let randomX : number = Math.floor(Math.random() * canvasWidth) - (gradientSpriteType.getSpriteWidth()/2);
+            let randomY : number = Math.floor(Math.random() * canvasHeight) - (gradientSpriteType.getSpriteHeight()/2);
+            spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+            this.scene.addCircleSprite(spriteToAdd);
+        }
+        
     }
 
 

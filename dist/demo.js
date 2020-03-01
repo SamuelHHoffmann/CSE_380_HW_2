@@ -97,7 +97,7 @@ var AnimatedSpriteDemo = function () {
         value: function buildText(game) {
             var sceneGraph = game.getSceneGraph();
             var numSpritesText = new TextRenderer_1.TextToRender("Num Sprites", "", 20, 50, function () {
-                numSpritesText.text = "Number of Sprites: " + sceneGraph.getNumSprites() + " " + sceneGraph.getSceneDescription();
+                numSpritesText.text = "Number of Sprites: " + sceneGraph.getNumSprites() + "" + sceneGraph.getSceneDescription();
             });
             var textRenderer = game.getRenderingSystem().getTextRenderer();
             textRenderer.addTextToRender(numSpritesText);
@@ -2714,6 +2714,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+/*
+ * This provides responses to UI input.
+ */
+var AnimatedSprite_1 = require("../scene/sprite/AnimatedSprite");
+var GradientCircleSprite_1 = require("../scene/sprite/GradientCircleSprite");
+var GradientCircleSpriteType_1 = require("../scene/sprite/GradientCircleSpriteType");
 
 var UIController = function () {
     function UIController() {
@@ -2722,6 +2728,7 @@ var UIController = function () {
         _classCallCheck(this, UIController);
 
         this.mouseDownHandler = function (event) {
+            _this.lastClick = event.timeStamp;
             var mousePressX = event.clientX;
             var mousePressY = event.clientY;
             var sprite = _this.scene.getSpriteAt(mousePressX, mousePressY);
@@ -2742,6 +2749,7 @@ var UIController = function () {
             }
         };
         this.mouseMoveHandler = function (event) {
+            _this.lastClick -= 500;
             if (_this.spriteToDrag != null) {
                 _this.spriteToDrag.getPosition().set(event.clientX + _this.dragOffsetX, event.clientY + _this.dragOffsetY, _this.spriteToDrag.getPosition().getZ(), _this.spriteToDrag.getPosition().getW());
             } else if (_this.circleToDrag != null) {
@@ -2758,7 +2766,7 @@ var UIController = function () {
                 if (sprite == null && circle == null) {
                     _this.scene.setSceneDescription("");
                 } else {
-                    _this.details = "HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + (sprite != null ? sprite : circle);
+                    _this.details = ", HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + (sprite != null ? sprite : circle);
                     _this.scene.setSceneDescription(_this.details);
                 }
             }
@@ -2766,6 +2774,10 @@ var UIController = function () {
         this.mouseUpHandler = function (event) {
             _this.spriteToDrag = null;
             _this.circleToDrag = null;
+            var time = event.timeStamp;
+            if (time - _this.lastClick < 500) {
+                _this.click();
+            }
         };
         this.doubleClick = function (event) {
             var mousePressX = event.clientX;
@@ -2784,36 +2796,6 @@ var UIController = function () {
             }
             event.stopImmediatePropagation();
         };
-        this.click = function (event) {
-            // let canvasWidth : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).width;
-            // let canvasHeight : number = (<HTMLCanvasElement>document.getElementById("game_canvas")).height;
-            // const DEMO_SPRITE_TYPES : string[] = [
-            //     'resources/animated_sprites/RedCircleMan.json',
-            //     'resources/animated_sprites/MultiColorBlock.json'
-            // ];
-            // const DEMO_SPRITE_STATES = {
-            //     FORWARD_STATE: 'FORWARD',
-            //     REVERSE_STATE: 'REVERSE'
-            // };
-            // let randNum = Math.floor(Math.random()*3)
-            // if (randNum == 0 || randNum == 1){
-            //     let spriteTypeToUse : string = DEMO_SPRITE_TYPES[randNum]
-            //     let animatedSpriteType : AnimatedSpriteType = this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
-            //     let spriteToAdd : AnimatedSprite = new AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
-            //     let randomX : number = Math.floor(Math.random() * canvasWidth) - (animatedSpriteType.getSpriteWidth()/2);
-            //     let randomY : number = Math.floor(Math.random() * canvasHeight) - (animatedSpriteType.getSpriteHeight()/2);
-            //     spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
-            //     this.scene.addAnimatedSprite(spriteToAdd);
-            // }else{
-            //     let gradientSpriteType : GradientCircleSpriteType = new GradientCircleSpriteType(200, 200);
-            //     let spriteToAdd : GradientCircleSprite = new GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
-            //     let randomX : number = Math.floor(Math.random() * canvasWidth) - (gradientSpriteType.getSpriteWidth()/2);
-            //     let randomY : number = Math.floor(Math.random() * canvasHeight) - (gradientSpriteType.getSpriteHeight()/2);
-            //     spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
-            //     this.scene.addCircleSprite(spriteToAdd);
-            // }
-            // event.stopImmediatePropagation();
-        };
     }
 
     _createClass(UIController, [{
@@ -2821,9 +2803,8 @@ var UIController = function () {
         value: function init(canvasId, initScene, reasourceManager) {
             this.spriteToDrag = null;
             this.circleToDrag = null;
-            this.moved = false;
-            this.once = false;
             this.details = "";
+            this.lastClick = 0;
             this.rM = reasourceManager;
             this.scene = initScene;
             this.dragOffsetX = -1;
@@ -2840,6 +2821,34 @@ var UIController = function () {
         value: function hoveringSpriteText() {
             return this.details;
         }
+    }, {
+        key: "click",
+        value: function click() {
+            var canvasWidth = document.getElementById("game_canvas").width;
+            var canvasHeight = document.getElementById("game_canvas").height;
+            var DEMO_SPRITE_TYPES = ['resources/animated_sprites/RedCircleMan.json', 'resources/animated_sprites/MultiColorBlock.json'];
+            var DEMO_SPRITE_STATES = {
+                FORWARD_STATE: 'FORWARD',
+                REVERSE_STATE: 'REVERSE'
+            };
+            var randNum = Math.floor(Math.random() * 3);
+            if (randNum == 0 || randNum == 1) {
+                var spriteTypeToUse = DEMO_SPRITE_TYPES[randNum];
+                var animatedSpriteType = this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
+                var spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                var randomX = Math.floor(Math.random() * canvasWidth) - animatedSpriteType.getSpriteWidth() / 2;
+                var randomY = Math.floor(Math.random() * canvasHeight) - animatedSpriteType.getSpriteHeight() / 2;
+                spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+                this.scene.addAnimatedSprite(spriteToAdd);
+            } else {
+                var gradientSpriteType = new GradientCircleSpriteType_1.GradientCircleSpriteType(200, 200);
+                var _spriteToAdd = new GradientCircleSprite_1.GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
+                var _randomX = Math.floor(Math.random() * canvasWidth) - gradientSpriteType.getSpriteWidth() / 2;
+                var _randomY = Math.floor(Math.random() * canvasHeight) - gradientSpriteType.getSpriteHeight() / 2;
+                _spriteToAdd.getPosition().set(_randomX, _randomY, 0.0, 1.0);
+                this.scene.addCircleSprite(_spriteToAdd);
+            }
+        }
     }]);
 
     return UIController;
@@ -2847,6 +2856,6 @@ var UIController = function () {
 
 exports.UIController = UIController;
 
-},{}]},{},[1])
+},{"../scene/sprite/AnimatedSprite":16,"../scene/sprite/GradientCircleSprite":18,"../scene/sprite/GradientCircleSpriteType":19}]},{},[1])
 
 //# sourceMappingURL=demo.js.map
