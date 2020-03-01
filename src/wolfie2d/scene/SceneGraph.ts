@@ -14,6 +14,8 @@ export class SceneGraph {
     private visibleSet : Array<SceneObject>;
 
 
+    private sceneDescription : string;
+
     private circleSprites : Array<GradientCircleSprite>;
 
     public constructor() {
@@ -21,6 +23,7 @@ export class SceneGraph {
         this.animatedSprites = new Array();
         this.circleSprites = new Array();
         this.visibleSet = new Array();
+        this.sceneDescription = "";
     }
 
     public getNumSprites() : number {
@@ -69,6 +72,14 @@ export class SceneGraph {
                 return circle;
         }
         return null;
+    }
+
+    public getSceneDescription() : string{
+        return this.sceneDescription;
+    }
+
+    public setSceneDescription(desc : string){
+        this.sceneDescription = desc;
     }
 
     /**

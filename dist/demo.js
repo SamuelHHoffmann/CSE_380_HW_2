@@ -97,7 +97,7 @@ var AnimatedSpriteDemo = function () {
         value: function buildText(game) {
             var sceneGraph = game.getSceneGraph();
             var numSpritesText = new TextRenderer_1.TextToRender("Num Sprites", "", 20, 50, function () {
-                numSpritesText.text = "Number of Sprites: " + sceneGraph.getNumSprites();
+                numSpritesText.text = "Number of Sprites: " + sceneGraph.getNumSprites() + " " + sceneGraph.getSceneDescription();
             });
             var textRenderer = game.getRenderingSystem().getTextRenderer();
             textRenderer.addTextToRender(numSpritesText);
@@ -2096,6 +2096,7 @@ var SceneGraph = function () {
         this.animatedSprites = new Array();
         this.circleSprites = new Array();
         this.visibleSet = new Array();
+        this.sceneDescription = "";
     }
 
     _createClass(SceneGraph, [{
@@ -2194,6 +2195,16 @@ var SceneGraph = function () {
             }
 
             return null;
+        }
+    }, {
+        key: "getSceneDescription",
+        value: function getSceneDescription() {
+            return this.sceneDescription;
+        }
+    }, {
+        key: "setSceneDescription",
+        value: function setSceneDescription(desc) {
+            this.sceneDescription = desc;
         }
         /**
          * update
@@ -2735,6 +2746,21 @@ var UIController = function () {
                 _this.spriteToDrag.getPosition().set(event.clientX + _this.dragOffsetX, event.clientY + _this.dragOffsetY, _this.spriteToDrag.getPosition().getZ(), _this.spriteToDrag.getPosition().getW());
             } else if (_this.circleToDrag != null) {
                 _this.circleToDrag.getPosition().set(event.clientX + _this.dragOffsetX, event.clientY + _this.dragOffsetY, _this.circleToDrag.getPosition().getZ(), _this.circleToDrag.getPosition().getW());
+            } else {
+                //hover 
+                var mousePressX = event.clientX;
+                var mousePressY = event.clientY;
+                var sprite = _this.scene.getSpriteAt(mousePressX, mousePressY);
+                var circle = _this.scene.getCircleAt(mousePressX, mousePressY);
+                console.log("HoverX: " + mousePressX);
+                console.log("HoverY: " + mousePressY);
+                console.log("sprite: " + (sprite != null ? sprite : circle));
+                if (sprite == null && circle == null) {
+                    _this.scene.setSceneDescription("");
+                } else {
+                    _this.details = "HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + (sprite != null ? sprite : circle);
+                    _this.scene.setSceneDescription(_this.details);
+                }
             }
         };
         this.mouseUpHandler = function (event) {
@@ -2797,6 +2823,7 @@ var UIController = function () {
             this.circleToDrag = null;
             this.moved = false;
             this.once = false;
+            this.details = "";
             this.rM = reasourceManager;
             this.scene = initScene;
             this.dragOffsetX = -1;
@@ -2807,6 +2834,11 @@ var UIController = function () {
             canvas.addEventListener("mousedown", this.mouseDownHandler);
             canvas.addEventListener("mousemove", this.mouseMoveHandler);
             canvas.addEventListener("mouseup", this.mouseUpHandler);
+        }
+    }, {
+        key: "hoveringSpriteText",
+        value: function hoveringSpriteText() {
+            return this.details;
         }
     }]);
 

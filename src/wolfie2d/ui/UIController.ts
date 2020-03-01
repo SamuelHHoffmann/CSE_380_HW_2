@@ -18,6 +18,7 @@ export class UIController {
     private moved : boolean;
     private once : boolean;
     private rM : ResourceManager;
+    private details : string;
 
     public constructor() {}
 
@@ -26,6 +27,7 @@ export class UIController {
         this.circleToDrag = null;
         this.moved = false;
         this.once = false;
+        this.details = "";
 
         this.rM = reasourceManager;
 
@@ -74,7 +76,26 @@ export class UIController {
                 event.clientY + this.dragOffsetY, 
                 this.circleToDrag.getPosition().getZ(), 
                 this.circleToDrag.getPosition().getW());
+        }else{
+            //hover 
+            let mousePressX : number = event.clientX;
+            let mousePressY : number = event.clientY;
+            let sprite : AnimatedSprite = this.scene.getSpriteAt(mousePressX, mousePressY);
+            let circle : GradientCircleSprite = this.scene.getCircleAt(mousePressX, mousePressY);
+            console.log("HoverX: " + mousePressX);
+            console.log("HoverY: " + mousePressY);
+            console.log("sprite: " + ((sprite != null) ? sprite : circle));
+            if (sprite == null && circle == null){
+                this.scene.setSceneDescription("");
+            }else{
+                this.details = "HoverX: " + mousePressX + ", " + "HoverY: " + mousePressY + ", " + "sprite: " + ((sprite != null) ? sprite : circle);
+                this.scene.setSceneDescription(this.details);
+            }
         }
+    }
+
+    public hoveringSpriteText() : string{
+        return this.details;
     }
 
     public mouseUpHandler = (event : MouseEvent) : void => {
