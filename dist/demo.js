@@ -2774,10 +2774,6 @@ var UIController = function () {
         this.mouseUpHandler = function (event) {
             _this.spriteToDrag = null;
             _this.circleToDrag = null;
-            var time = event.timeStamp;
-            if (time - _this.lastClick < 500) {
-                _this.click();
-            }
         };
         this.doubleClick = function (event) {
             var mousePressX = event.clientX;
@@ -2795,6 +2791,41 @@ var UIController = function () {
                 _this.scene.removeCircleSprite(circle);
             }
             event.stopImmediatePropagation();
+        };
+        this.click = function (event) {
+            var mousePressX = event.clientX;
+            var mousePressY = event.clientY;
+            var sprite = _this.scene.getSpriteAt(mousePressX, mousePressY);
+            var circle = _this.scene.getCircleAt(mousePressX, mousePressY);
+            console.log("mousePressX: " + mousePressX);
+            console.log("mousePressY: " + mousePressY);
+            console.log("sprite: " + (sprite != null ? sprite : circle));
+            if (sprite == null && circle == null) {
+                var canvasWidth = document.getElementById("game_canvas").width;
+                var canvasHeight = document.getElementById("game_canvas").height;
+                var DEMO_SPRITE_TYPES = ['resources/animated_sprites/RedCircleMan.json', 'resources/animated_sprites/MultiColorBlock.json'];
+                var DEMO_SPRITE_STATES = {
+                    FORWARD_STATE: 'FORWARD',
+                    REVERSE_STATE: 'REVERSE'
+                };
+                var randNum = Math.floor(Math.random() * 3);
+                if (randNum == 0 || randNum == 1) {
+                    var spriteTypeToUse = DEMO_SPRITE_TYPES[randNum];
+                    var animatedSpriteType = _this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
+                    var spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
+                    var randomX = Math.floor(Math.random() * canvasWidth) - animatedSpriteType.getSpriteWidth() / 2;
+                    var randomY = Math.floor(Math.random() * canvasHeight) - animatedSpriteType.getSpriteHeight() / 2;
+                    spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
+                    _this.scene.addAnimatedSprite(spriteToAdd);
+                } else {
+                    var gradientSpriteType = new GradientCircleSpriteType_1.GradientCircleSpriteType(200, 200);
+                    var _spriteToAdd = new GradientCircleSprite_1.GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
+                    var _randomX = Math.floor(Math.random() * canvasWidth) - gradientSpriteType.getSpriteWidth() / 2;
+                    var _randomY = Math.floor(Math.random() * canvasHeight) - gradientSpriteType.getSpriteHeight() / 2;
+                    _spriteToAdd.getPosition().set(_randomX, _randomY, 0.0, 1.0);
+                    _this.scene.addCircleSprite(_spriteToAdd);
+                }
+            }
         };
     }
 
@@ -2820,34 +2851,6 @@ var UIController = function () {
         key: "hoveringSpriteText",
         value: function hoveringSpriteText() {
             return this.details;
-        }
-    }, {
-        key: "click",
-        value: function click() {
-            var canvasWidth = document.getElementById("game_canvas").width;
-            var canvasHeight = document.getElementById("game_canvas").height;
-            var DEMO_SPRITE_TYPES = ['resources/animated_sprites/RedCircleMan.json', 'resources/animated_sprites/MultiColorBlock.json'];
-            var DEMO_SPRITE_STATES = {
-                FORWARD_STATE: 'FORWARD',
-                REVERSE_STATE: 'REVERSE'
-            };
-            var randNum = Math.floor(Math.random() * 3);
-            if (randNum == 0 || randNum == 1) {
-                var spriteTypeToUse = DEMO_SPRITE_TYPES[randNum];
-                var animatedSpriteType = this.rM.getAnimatedSpriteTypeById(spriteTypeToUse);
-                var spriteToAdd = new AnimatedSprite_1.AnimatedSprite(animatedSpriteType, DEMO_SPRITE_STATES.FORWARD_STATE);
-                var randomX = Math.floor(Math.random() * canvasWidth) - animatedSpriteType.getSpriteWidth() / 2;
-                var randomY = Math.floor(Math.random() * canvasHeight) - animatedSpriteType.getSpriteHeight() / 2;
-                spriteToAdd.getPosition().set(randomX, randomY, 0.0, 1.0);
-                this.scene.addAnimatedSprite(spriteToAdd);
-            } else {
-                var gradientSpriteType = new GradientCircleSpriteType_1.GradientCircleSpriteType(200, 200);
-                var _spriteToAdd = new GradientCircleSprite_1.GradientCircleSprite(gradientSpriteType, "New Gradient Sprite");
-                var _randomX = Math.floor(Math.random() * canvasWidth) - gradientSpriteType.getSpriteWidth() / 2;
-                var _randomY = Math.floor(Math.random() * canvasHeight) - gradientSpriteType.getSpriteHeight() / 2;
-                _spriteToAdd.getPosition().set(_randomX, _randomY, 0.0, 1.0);
-                this.scene.addCircleSprite(_spriteToAdd);
-            }
         }
     }]);
 
